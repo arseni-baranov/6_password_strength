@@ -1,5 +1,5 @@
 import re
-import urllib.request as url
+import os.path
 
 
 def check_email(user_email):
@@ -85,9 +85,9 @@ def check_user_data(password):
     return add_to_strength
 
 
-def password_blacklist_check(blacklist):
+def password_blacklist_check(blacklist_file):
 
-    with open(blacklist) as blacklist:
+    with open(blacklist_file) as blacklist:
         password_list = blacklist.read().splitlines()
 
     if password not in password_list:
@@ -117,7 +117,7 @@ def password_case_check():
         return True
 
 
-def get_password_strength():
+def get_password_strength(blacklist):
     if len(password) < 5:
         pass_strength = 1
     elif len(password) <= 8:
@@ -134,7 +134,7 @@ def get_password_strength():
     if password_spec_char_check() is True:
         pass_strength += 1
 
-    if password_blacklist_check('passwords.txt') is True:
+    if password_blacklist_check(blacklist) is True:
         pass_strength += 1
 
     return 'Сложность вашего пароля: ' + str(pass_strength + check_user_data(password)) + '/10'
@@ -142,8 +142,12 @@ def get_password_strength():
 
 if __name__ == '__main__':
 
-    password_blacklist = 'https://raw.githubusercontent.com/arseni-baranov/6_password_strength/master/passwords.txt'
-    url.urlretrieve(password_blacklist, "passwords.txt")
+    blacklist = input('Введие название текстового файла с часто используемыми паролями')
+
+    current_dir = os.path.abspath(__file__)
+    script_name = os.path.basename(__file__)
+
+    blacklist_file = current_dir.replace(script_name, '') + blacklist
 
     password = input('Введите пароль, и мы оценим его сложность : ')
-    print(get_password_strength())
+    print(get_password_strength(blacklist_file))
