@@ -142,7 +142,7 @@ def get_password_strength(blacklist):
 
 if __name__ == '__main__':
 
-    blacklist = input('Введие название текстового файла с часто используемыми паролями')
+    blacklist = input('Введие название текстового файла с часто используемыми паролями: ')
 
     current_dir = os.path.abspath(__file__)
     script_name = os.path.basename(__file__)
