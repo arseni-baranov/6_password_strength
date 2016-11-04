@@ -1,100 +1,133 @@
+''' a variety functions for checking the password strength '''
+
+import getpass
 import re
 
+def check_initial_strength(pwd):
 
-def run_password_checks(pwd, blacklist):
+    ''' return initial password strength based on it's length '''
 
-    def check_initial_strength():
-        if len(pwd) < 5:
-            initial_strength = 1
-        elif len(pwd) <= 8:
-            initial_strength = 2
-        else:
-            initial_strength = 3
+    if len(pwd) < 5:
+        initial_strength = 1
+    elif len(pwd) <= 8:
+        initial_strength = 2
+    else:
+        initial_strength = 3
 
-        return initial_strength
+    return initial_strength
 
-    def pwd_case_check():
-        if pwd != pwd.lower() and pwd != pwd.upper():
-            return True
-        else:
-            return False
 
-    def pwd_numerical_check():
-        numbers = re.findall(r'\d+', pwd)
-        letters = re.findall(r'[A-Za-z]', pwd)
+def pwd_case_check(pwd):
+    
+    ''' check password for case-sensitivity '''
+    
+    return 1 if pwd != pwd.lower() and pwd != pwd.upper() else 0
 
-        if len(numbers) > 0 and len(letters) > 0:
-            return True
-        else:
-            return False
 
-    def pwd_spchar_check():
-        special_char = re.findall(r'[^A-Za-z0-9]', pwd)
+def pwd_numerical_check(pwd):
 
-        if len(special_char) > 0:
-            return True
-        else:
-            return False
+    ''' check password for numbers '''
 
-    def pwd_blacklist_check(blacklist):
-        with open(blacklist) as blacklist:
-            blacklist = blacklist.read().splitlines()
+    numbers = re.findall(r'\d+', pwd)
+    letters = re.findall(r'[A-Za-z]', pwd)
+    return 1 if len(numbers) > 0 and len(letters) > 0 else 0
 
-        if pwd not in blacklist:
-            return True
-        else:
-            return False
 
-    checklist = [check_initial_strength(),
-                 pwd_case_check(),
-                 pwd_numerical_check(),
-                 pwd_spchar_check(),
-                 pwd_blacklist_check(blacklist)]
+def pwd_spchar_check(pwd):
 
-    strength = sum(checklist)
+    ''' check password for special characters '''
 
-    def personal_info_check():
+    special_char = re.findall(r'[^A-Za-z0-9]', pwd)
+    return 1 if len(special_char) > 0 else 0
 
-        date_check = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[1,3-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$')
-        license_check = re.compile(r'[а-я]\d{3}[а-я]{2}\d{2,3}')
-        email_check = re.compile(r'^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,3}|[0-9]{1,3})(\]?)$')
-        cell_phone = re.compile(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})')
 
-        def pwd_check_formats(format):
-            result = re.search(format, pwd)
-            if result is not None:
-                return True
-            else:
-                return False
+def pwd_blacklist_check(pwd):
 
-        format_checklist = [pwd_check_formats(date_check),
-                            pwd_check_formats(license_check),
-                            pwd_check_formats(email_check),
-                            pwd_check_formats(cell_phone)]
+    ''' check if password is within blacklist '''
 
-        if sum(format_checklist) == 0:
-            # Пароль надёжный, проверка пройдена
-            return True
-        else:
-            return False
+    while True:
+        try:
+            blacklist_path = input('Enter the path to your password blacklist: ')
+            with open(blacklist_path) as blacklist:
+                blacklist = blacklist.read().splitlines()
+            return 1 if pwd not in blacklist else 0
 
-    if personal_info_check():
-        strength += 3
+        except FileNotFoundError:
+            print('No such file found, try again...')
 
-    return strength
+
+def pwd_check_formats(regex, pwd):
+
+    '''
+    Check password against different regex-expressions
+
+    :param format: compiled regex expression
+    :param pwd: password for checking against regex expression
+    :return: 1 if True, 0 if False (useful for adding up in case of multiple checks)
+    '''
+
+    result = re.search(regex, pwd)
+
+    return 1 if not result else 0
+
+
+def count_password_strength(common_checklist, personal_checklist):
+
+    '''
+    Count password strength based on two function tuples
+
+    :param common_checklist: tuple with general functions that check the password
+    :param personal_checklist: tuple with personal info functions that check the password
+    :return: sum of the common checks (maximum is 7), plus 3 if all personal checks are True
+    '''
+
+    PERSONAL_MAXIMUM = 3
+
+    if sum(personal_checklist) == len(personal_checklist):
+        return sum(common_checklist) + PERSONAL_MAXIMUM
+    else:
+        return sum(common_checklist)
+
+
+def print_password(password_strength):
+
+    ''' Pretty print the password strength :param password_strength: a number from 0 to 10 '''
+
+    strength_string = '█' * password_strength
+    empty_strength = '░' * (10 - password_strength)
+
+    print('Your passwords strength:', password_strength , '/ 10', sep=' ')
+    print(strength_string + empty_strength)
+
+
+def main():
+
+    ''' Return the password strength based on a variety of common and personal info checks '''
+
+    pwd = getpass.getpass('Enter your password: ')
+
+    DATE_REGEX = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[1,3-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$')
+    LICENSE_REGEX = re.compile(r'[а-я]\d{3}[а-я]{2}\d{2,3}')
+    EMAIL_REGEX = re.compile(r'^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,3}|[0-9]{1,3})(\]?)$')
+    CELL_REGEX = re.compile(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})')
+
+    common_checklist = (
+        check_initial_strength(pwd),
+        pwd_case_check(pwd),
+        pwd_numerical_check(pwd),
+        pwd_spchar_check(pwd),
+        pwd_blacklist_check(pwd),
+        )
+
+    personal_checklist = (
+        pwd_check_formats(DATE_REGEX, pwd),
+        pwd_check_formats(LICENSE_REGEX, pwd),
+        pwd_check_formats(EMAIL_REGEX, pwd),
+        pwd_check_formats(CELL_REGEX, pwd)
+        )
+
+    password_strength = count_password_strength(common_checklist, personal_checklist)
+    print_password(password_strength)
 
 if __name__ == '__main__':
-
-    pwd = input('Введите пароль для оценки его сложности: ')
-    blacklist = input('Введите текстовый файл с чёрным списком паролей: ')
-
-    # Результат
-    
-    print('Сложность вашего пароля: ', run_password_checks(pwd, blacklist), '/ 10')
-
-    # Красивый вывод
-    
-    strength_string = '█' * run_password_checks(pwd, blacklist)
-    empty_strength = '░' * (10 - run_password_checks(pwd, blacklist))
-
-    print(strength_string + empty_strength)
+    main()
