@@ -5,16 +5,16 @@ import re
 
 
 class Constants:
-    
-    DATE_REGEX = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)'
+
+    date_regex = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)'
                             r'(?:0?[1,3-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)'
                             r'0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|'
                             r'(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)'
                             r'(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$')
 
-    LICENSE_REGEX = re.compile(r'[а-я]\d{3}[а-я]{2}\d{2,3}')
-    EMAIL_REGEX = re.compile(r'^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,3}|[0-9]{1,3})(\]?)$')
-    CELL_REGEX = re.compile(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})')
+    license_regex = re.compile(r'[а-я]\d{3}[а-я]{2}\d{2,3}')
+    email_regex = re.compile(r'^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,3}|[0-9]{1,3})(\]?)$')
+    cell_regex = re.compile(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})')
 
 
 def check_initial_strength(pwd):
@@ -129,10 +129,10 @@ def main():
         )
 
     personal_checklist = (
-        pwd_check_formats(Constants.DATE_REGEX, pwd),
-        pwd_check_formats(Constants.LICENSE_REGEX, pwd),
-        pwd_check_formats(Constants.EMAIL_REGEX, pwd),
-        pwd_check_formats(Constants.CELL_REGEX, pwd)
+        pwd_check_formats(Constants.date_regex, pwd),
+        pwd_check_formats(Constants.license_regex, pwd),
+        pwd_check_formats(Constants.email_regex, pwd),
+        pwd_check_formats(Constants.cell_regex, pwd)
         )
 
     password_strength = count_password_strength(common_checklist, personal_checklist)
