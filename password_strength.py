@@ -3,6 +3,20 @@
 import getpass
 import re
 
+
+class Constants:
+    
+    DATE_REGEX = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)'
+                            r'(?:0?[1,3-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)'
+                            r'0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|'
+                            r'(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)'
+                            r'(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$')
+
+    LICENSE_REGEX = re.compile(r'[а-я]\d{3}[а-я]{2}\d{2,3}')
+    EMAIL_REGEX = re.compile(r'^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,3}|[0-9]{1,3})(\]?)$')
+    CELL_REGEX = re.compile(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})')
+
+
 def check_initial_strength(pwd):
 
     ''' return initial password strength based on it's length '''
@@ -50,7 +64,7 @@ def pwd_blacklist_check(pwd):
             blacklist_path = input('Enter the path to your password blacklist: ')
             with open(blacklist_path) as blacklist:
                 blacklist = blacklist.read().splitlines()
-            return 1 if pwd not in blacklist else 0
+            return True if pwd not in blacklist else False
 
         except FileNotFoundError:
             print('No such file found, try again...')
@@ -106,11 +120,6 @@ def main():
 
     pwd = getpass.getpass('Enter your password: ')
 
-    DATE_REGEX = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[1,3-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$')
-    LICENSE_REGEX = re.compile(r'[а-я]\d{3}[а-я]{2}\d{2,3}')
-    EMAIL_REGEX = re.compile(r'^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,3}|[0-9]{1,3})(\]?)$')
-    CELL_REGEX = re.compile(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})')
-
     common_checklist = (
         check_initial_strength(pwd),
         pwd_case_check(pwd),
@@ -120,10 +129,10 @@ def main():
         )
 
     personal_checklist = (
-        pwd_check_formats(DATE_REGEX, pwd),
-        pwd_check_formats(LICENSE_REGEX, pwd),
-        pwd_check_formats(EMAIL_REGEX, pwd),
-        pwd_check_formats(CELL_REGEX, pwd)
+        pwd_check_formats(Constants.DATE_REGEX, pwd),
+        pwd_check_formats(Constants.LICENSE_REGEX, pwd),
+        pwd_check_formats(Constants.EMAIL_REGEX, pwd),
+        pwd_check_formats(Constants.CELL_REGEX, pwd)
         )
 
     password_strength = count_password_strength(common_checklist, personal_checklist)
