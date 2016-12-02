@@ -16,6 +16,8 @@ class Constants:
     email_regex = re.compile(r'^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,3}|[0-9]{1,3})(\]?)$')
     cell_regex = re.compile(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})')
 
+    personal_maximum = 3
+
 
 def check_initial_strength(pwd):
 
@@ -95,10 +97,8 @@ def count_password_strength(common_checklist, personal_checklist):
     :return: sum of the common checks (maximum is 7), plus 3 if all personal checks are True
     '''
 
-    PERSONAL_MAXIMUM = 3
-
     if sum(personal_checklist) == len(personal_checklist):
-        return sum(common_checklist) + PERSONAL_MAXIMUM
+        return sum(common_checklist) + Constants.personal_maximum
     else:
         return sum(common_checklist)
 
