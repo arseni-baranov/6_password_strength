@@ -1,10 +1,70 @@
-''' a variety functions for checking the password strength '''
+''' Take a password from user and check it's strength based
+    on a variety of tests
+'''
 
 import getpass
 import re
 
+password_strength = 0
 
-class Constants:
+
+def add_points(points=1):
+    global password_strength
+    password_strength += points
+
+
+def length_check(password):
+
+    if len(password) > 5:
+        add_points(2)
+    elif len(password) > 8:
+        add_points(3)
+    elif len(password) == 0:
+        add_points(0)
+    else:
+        add_points()
+
+
+def case_sensitivity_check(password):
+
+    if password != password.lower() and password != password.upper():
+        add_points()
+
+
+def numbers_check(password):
+
+    numbers = re.findall(r'\d+', password)
+    letters = re.findall(r'[A-Za-z]', password)
+    if len(numbers) > 0 and len(letters) > 0:
+        add_points()
+
+
+def special_characters_check(password):
+
+    special_char = re.findall(r'[^A-Za-z0-9]', password)
+    if len(special_char) > 0:
+        add_points()
+
+
+def load_blacklist():
+    while True:
+        try:
+            blacklist_path = input('Enter the path to your password blacklist: ')
+            with open(blacklist_path) as blacklist:
+                blacklist = blacklist.read().splitlines()
+                return blacklist
+        except FileNotFoundError:
+            print('No such file found, try again...')
+
+
+def blacklist_check(password, blacklist):
+    if password not in blacklist:
+        add_points()
+
+
+def bad_ideas_check(password):
+
+    # Checks if certain common formats match in password
 
     date_regex = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)'
                             r'(?:0?[1,3-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)'
@@ -14,98 +74,17 @@ class Constants:
 
     license_regex = re.compile(r'[а-я]\d{3}[а-я]{2}\d{2,3}')
     email_regex = re.compile(r'^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,3}|[0-9]{1,3})(\]?)$')
-    cell_regex = re.compile(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})')
+    cellphone_regex = re.compile(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}'
+                                 r'[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})')
 
-    personal_maximum = 3
+    bad_ideas = date_regex, license_regex, email_regex, cellphone_regex
 
-
-def check_initial_strength(pwd):
-
-    ''' return initial password strength based on it's length '''
-
-    if len(pwd) < 5:
-        initial_strength = 1
-    elif len(pwd) <= 8:
-        initial_strength = 2
-    else:
-        initial_strength = 3
-
-    return initial_strength
+    for regex in bad_ideas:
+        if not re.search(regex, password):
+            add_points()
 
 
-def pwd_case_check(pwd):
-    
-    ''' check password for case-sensitivity '''
-    
-    return 1 if pwd != pwd.lower() and pwd != pwd.upper() else 0
-
-
-def pwd_numerical_check(pwd):
-
-    ''' check password for numbers '''
-
-    numbers = re.findall(r'\d+', pwd)
-    letters = re.findall(r'[A-Za-z]', pwd)
-    return 1 if len(numbers) > 0 and len(letters) > 0 else 0
-
-
-def pwd_spchar_check(pwd):
-
-    ''' check password for special characters '''
-
-    special_char = re.findall(r'[^A-Za-z0-9]', pwd)
-    return 1 if len(special_char) > 0 else 0
-
-
-def pwd_blacklist_check(pwd):
-
-    ''' check if password is within blacklist '''
-
-    while True:
-        try:
-            blacklist_path = input('Enter the path to your password blacklist: ')
-            with open(blacklist_path) as blacklist:
-                blacklist = blacklist.read().splitlines()
-            return True if pwd not in blacklist else False
-
-        except FileNotFoundError:
-            print('No such file found, try again...')
-
-
-def pwd_check_formats(regex, pwd):
-
-    '''
-    Check password against different regex-expressions
-
-    :param format: compiled regex expression
-    :param pwd: password for checking against regex expression
-    :return: 1 if True, 0 if False (useful for adding up in case of multiple checks)
-    '''
-
-    result = re.search(regex, pwd)
-
-    return 1 if not result else 0
-
-
-def count_password_strength(common_checklist, personal_checklist):
-
-    '''
-    Count password strength based on two function tuples
-
-    :param common_checklist: tuple with general functions that check the password
-    :param personal_checklist: tuple with personal info functions that check the password
-    :return: sum of the common checks (maximum is 7), plus 3 if all personal checks are True
-    '''
-
-    if sum(personal_checklist) == len(personal_checklist):
-        return sum(common_checklist) + Constants.personal_maximum
-    else:
-        return sum(common_checklist)
-
-
-def print_password(password_strength):
-
-    ''' Pretty print the password strength :param password_strength: a number from 0 to 10 '''
+def print_strength(password_strength):
 
     strength_string = '█' * password_strength
     empty_strength = '░' * (10 - password_strength)
@@ -116,27 +95,20 @@ def print_password(password_strength):
 
 def main():
 
-    ''' Return the password strength based on a variety of common and personal info checks '''
+    password = getpass.getpass('Enter your password: ')
+    length_check(password)
 
-    pwd = getpass.getpass('Enter your password: ')
+    if password_strength > 1:
 
-    common_checklist = (
-        check_initial_strength(pwd),
-        pwd_case_check(pwd),
-        pwd_numerical_check(pwd),
-        pwd_spchar_check(pwd),
-        pwd_blacklist_check(pwd),
-        )
+        case_sensitivity_check(password)
+        numbers_check(password)
+        special_characters_check(password)
+        blacklist_check(password, load_blacklist())
+        bad_ideas_check(password)
 
-    personal_checklist = (
-        pwd_check_formats(Constants.date_regex, pwd),
-        pwd_check_formats(Constants.license_regex, pwd),
-        pwd_check_formats(Constants.email_regex, pwd),
-        pwd_check_formats(Constants.cell_regex, pwd)
-        )
-
-    password_strength = count_password_strength(common_checklist, personal_checklist)
-    print_password(password_strength)
+        print_strength(password_strength)
+    else:
+        print_strength(password_strength)
 
 if __name__ == '__main__':
     main()
