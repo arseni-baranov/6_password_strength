@@ -5,45 +5,31 @@
 import getpass
 import re
 
-password_strength = 0
-
-
-def add_points(points=1):
-    global password_strength
-    password_strength += points
-
 
 def length_check(password):
-
-    if len(password) > 5:
-        add_points(2)
-    elif len(password) > 8:
-        add_points(3)
+    if len(password) > 8:
+        return 3
+    elif len(password) > 5:
+        return 2
     elif len(password) == 0:
-        add_points(0)
+        return 0
     else:
-        add_points()
+        return 1
 
 
 def case_sensitivity_check(password):
-
-    if password != password.lower() and password != password.upper():
-        add_points()
+    return bool(password != password.lower() and password != password.upper())
 
 
 def numbers_check(password):
-
     numbers = re.findall(r'\d+', password)
     letters = re.findall(r'[A-Za-z]', password)
-    if len(numbers) > 0 and len(letters) > 0:
-        add_points()
+    return bool(len(numbers) > 0 and len(letters) > 0)
 
 
 def special_characters_check(password):
-
     special_char = re.findall(r'[^A-Za-z0-9]', password)
-    if len(special_char) > 0:
-        add_points()
+    return bool(len(special_char) > 0)
 
 
 def load_blacklist():
@@ -58,14 +44,11 @@ def load_blacklist():
 
 
 def blacklist_check(password, blacklist):
-    if password not in blacklist:
-        add_points()
+    return bool(password not in blacklist)
 
 
 def bad_ideas_check(password):
-
     # Checks if certain common formats match in password
-
     date_regex = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)'
                             r'(?:0?[1,3-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)'
                             r'0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|'
@@ -81,11 +64,10 @@ def bad_ideas_check(password):
 
     for regex in bad_ideas:
         if not re.search(regex, password):
-            add_points()
+            return 3
 
 
 def print_strength(password_strength):
-
     strength_string = '█' * password_strength
     empty_strength = '░' * (10 - password_strength)
 
@@ -94,18 +76,17 @@ def print_strength(password_strength):
 
 
 def main():
-
     password = getpass.getpass('Enter your password: ')
-    length_check(password)
+    password_strength = length_check(password)
+
+    checklist = [case_sensitivity_check(password),
+                 numbers_check(password),
+                 special_characters_check(password),
+                 blacklist_check(password, load_blacklist()),
+                 bad_ideas_check(password)]
 
     if password_strength > 1:
-
-        case_sensitivity_check(password)
-        numbers_check(password)
-        special_characters_check(password)
-        blacklist_check(password, load_blacklist())
-        bad_ideas_check(password)
-
+        password_strength += sum(checklist)
         print_strength(password_strength)
     else:
         print_strength(password_strength)
