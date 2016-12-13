@@ -1,7 +1,3 @@
-''' Take a password from user and check it's strength based
-    on a variety of tests
-'''
-
 import getpass
 import re
 
@@ -48,7 +44,6 @@ def blacklist_check(password, blacklist):
 
 
 def bad_ideas_check(password):
-    # Checks if certain common formats match in password
     date_regex = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)'
                             r'(?:0?[1,3-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)'
                             r'0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|'
