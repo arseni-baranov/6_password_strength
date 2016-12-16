@@ -66,7 +66,7 @@ def print_strength(password_strength):
     strength_string = '█' * password_strength
     empty_strength = '░' * (10 - password_strength)
 
-    print('Your passwords strength:', password_strength , '/ 10', sep=' ')
+    print('Your passwords strength:', password_strength, '/ 10', sep=' ')
     print(strength_string + empty_strength)
 
 
@@ -82,9 +82,8 @@ def main():
 
     if password_strength > 1:
         password_strength += sum(checklist)
-        print_strength(password_strength)
-    else:
-        print_strength(password_strength)
+
+    print_strength(password_strength)
 
 if __name__ == '__main__':
     main()
